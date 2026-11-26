@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>远程协助 · 开启 SSH</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c1f24; --muted:#667085; --line:#e4e7ec; --accent:#2563eb; --ok:#15803d; --code:#0f172a; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111318; --card:#1a1d24; --text:#e8eaef; --muted:#98a2b3; --line:#2a2f3a; --accent:#60a5fa; --ok:#4ade80; --code:#0b0d12; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:760px; margin:0 auto; padding:40px 20px 64px; }
+  h1 { font-size:24px; margin:0 0 6px; }
+  .sub { color:var(--muted); margin:0 0 24px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .tab { border:1px solid var(--line); background:var(--card); color:var(--text); padding:8px 16px; border-radius:8px; cursor:pointer; font:inherit; }
+  .tab[aria-selected="true"] { border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:16px; }
+  .card h2 { font-size:17px; margin:0 0 10px; }
+  ol { margin:0 0 14px; padding-left:22px; }
+  li { margin:4px 0; }
+  kbd { border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:0 6px; font:13px ui-monospace,Menlo,Consolas,monospace; background:var(--bg); }
+  .cmd { display:flex; gap:8px; align-items:stretch; }
+  code.line { flex:1; display:block; background:var(--code); color:#e2e8f0; padding:10px 12px; border-radius:8px; font:13px/1.5 ui-monospace,Menlo,Consolas,monospace; overflow-x:auto; white-space:nowrap; }
+  button.copy { border:0; background:var(--accent); color:#fff; padding:0 18px; border-radius:8px; cursor:pointer; font:inherit; font-weight:600; min-width:84px; }
+  button.copy.done { background:var(--ok); }
+  .off { border-style:dashed; }
+  .off h2 { color:var(--muted); }
+  .note { color:var(--muted); font-size:13px; margin:12px 0 0; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>远程协助 · 开启 SSH</h1>
+  <p class="sub">让协助你的人（和 TA 的 AI 助手）通过 SSH 远程排查这台电脑。只允许 TA 的密钥登录，同时关闭 SSH 的密码登录；4 小时后自动关闭，也可以随时一键关闭。</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-os="win">Windows</button>
+    <button class="tab" role="tab" data-os="mac">Mac</button>
+  </div>
+
+  <section data-panel="win" hidden>
+    <div class="card">
+      <h2>开启</h2>
+      <ol>
+        <li>点右边「复制」。</li>
+        <li>按 <kbd>Win</kbd> + <kbd>R</kbd>，粘贴。</li>
+        <li>按 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Enter</kbd>（以管理员身份运行），弹窗点「是」。</li>
+        <li>窗口出现绿色 <b>Remote Assist SSH is ON</b>，把 user、host、fingerprint 三行发给协助你的人。</li>
+      </ol>
+      <div class="cmd"><code class="line" data-cmd="win-enable"></code><button class="copy">复制</button></div>
+      <p class="note">第一次会安装 Windows 自带的 OpenSSH 服务，可能要几分钟。</p>
+    </div>
+    <div class="card">
+      <h2>不在同一个网络时（跨网络）</h2>
+      <p>用这条代替上面的开启命令，操作方式相同。它先开启 SSH，再通过 Pinggy 打一条加密隧道。窗口出现绿色 <b>Remote Assist tunnel is ON</b> 后，把 user、host、fingerprint 三行发给协助你的人。<b>这个窗口要一直开着</b>，关掉窗口隧道就断开。</p>
+      <div class="cmd"><code class="line" data-cmd="win-tunnel"></code><button class="copy">复制</button></div>
+      <p class="note">隧道地址最长保持 60 分钟，断开后会自动重连，但地址会变，需要重新发一次。即使走隧道，也只有协助者的密钥能登录。</p>
+    </div>
+    <div class="card off">
+      <h2>用完后关闭</h2>
+      <p>同样 <kbd>Win</kbd> + <kbd>R</kbd> → 粘贴 → <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Enter</kbd>。会删除密钥、恢复密码登录设置、停止并禁用 SSH 服务、移除防火墙规则和自动关闭任务。</p>
+      <div class="cmd"><code class="line" data-cmd="win-disable"></code><button class="copy">复制</button></div>
+    </div>
+  </section>
+
+  <section data-panel="mac" hidden>
+    <div class="card">
+      <h2>开启</h2>
+      <ol>
+        <li>点右边「复制」。</li>
+        <li>按 <kbd>⌘</kbd> + <kbd>空格</kbd>，输入「终端」回车打开。</li>
+        <li>粘贴后回车，按提示输入开机密码（输入时不显示，正常）。</li>
+        <li>出现 <b>Remote Assist SSH is ON</b>，把 user、host、fingerprint 三行发给协助你的人。</li>
+      </ol>
+      <div class="cmd"><code class="line" data-cmd="mac-enable"></code><button class="copy">复制</button></div>
+      <p class="note">如果提示没能启动，打开「系统设置 → 通用 → 共享」，手动打开「远程登录」后再运行一次。</p>
+    </div>
+    <div class="card">
+      <h2>不在同一个网络时（跨网络）</h2>
+      <p>用这条代替上面的开启命令。它先开启 SSH，再通过 Pinggy 打一条加密隧道。出现 <b>Remote Assist tunnel is ON</b> 后，把 user、host、fingerprint 三行发给协助你的人。<b>终端窗口要一直开着</b>，按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 或关掉窗口隧道就断开。</p>
+      <div class="cmd"><code class="line" data-cmd="mac-tunnel"></code><button class="copy">复制</button></div>
+      <p class="note">隧道地址最长保持 60 分钟，断开后会自动重连，但地址会变，需要重新发一次。即使走隧道，也只有协助者的密钥能登录。</p>
+    </div>
+    <div class="card off">
+      <h2>用完后关闭</h2>
+      <p>在终端粘贴回车，会删除密钥、恢复密码登录设置、关闭「远程登录」和自动关闭任务。</p>
+      <div class="cmd"><code class="line" data-cmd="mac-disable"></code><button class="copy">复制</button></div>
+    </div>
+  </section>
+
+</main>
+<script>
+  const base = location.href.replace(/[^/]*([?#].*)?$/, '');
+  const cmds = {
+    'win-enable':  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm ${base}win/enable.ps1 | iex; pause"`,
+    'win-disable': `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm ${base}win/disable.ps1 | iex; pause"`,
+    'win-tunnel':  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm ${base}win/enable.ps1 | iex; irm ${base}win/tunnel.ps1 | iex; pause"`,
+    'mac-tunnel':  `curl -fsSL ${base}mac/enable.sh | bash && curl -fsSL ${base}mac/tunnel.sh | bash`,
+    'mac-enable':  `curl -fsSL ${base}mac/enable.sh | bash`,
+    'mac-disable': `curl -fsSL ${base}mac/disable.sh | bash`,
+  };
+  document.querySelectorAll('[data-cmd]').forEach(el => { el.textContent = cmds[el.dataset.cmd]; });
+
+  document.querySelectorAll('button.copy').forEach(btn => btn.addEventListener('click', async () => {
+    const text = btn.previousElementSibling.textContent;
+    try { await navigator.clipboard.writeText(text); }
+    catch {
+      const ta = Object.assign(document.createElement('textarea'), { value: text });
+      document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    btn.textContent = '已复制'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('done'); }, 1500);
+  }));
+
+  function show(os) {
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.os === os));
+    document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== os; });
+  }
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.os)));
+  const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent;
+  show(/mac|iphone|ipad/i.test(platform) ? 'mac' : 'win');
+</script>
+</body>
+</html>
